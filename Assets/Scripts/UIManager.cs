@@ -6,12 +6,18 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [SerializeField] Image oxygenbar;
+    [SerializeField] Image hungrybar;
     public void UpdateOxygenBar()
     {
         Status playerstat = transform.parent.GetComponent<Status>();
-
-        Debug.Log("호출되냐?");
+        
         oxygenbar.fillAmount = playerstat.oxygen / playerstat.max_oxygen;
+    }
+
+    public void UdateHungryBar()
+    {
+        Status playerstat = transform.parent.GetComponent<Status>();
+        hungrybar.fillAmount = playerstat.hungry / playerstat.max_hungry;
     }
     public void SetPlayerUIDirection()
     {

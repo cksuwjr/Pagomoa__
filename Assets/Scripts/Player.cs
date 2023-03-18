@@ -6,10 +6,14 @@ using UnityEngine.Events;
 public class Player : MonoBehaviour
 {
     [SerializeField] Status status;
-
+    [SerializeField] public Move move;
+    [SerializeField] public Transform[] HitPointDown;
     [SerializeField] public float GroundHeight = 0;
 
+    public LayerMask WhatisGround;
+    public bool Digging;
     public UnityEvent oxygen_alter;
+    public UnityEvent hungry_alter;
     public UnityEvent direction_alter;
 
     [System.Serializable]
@@ -19,12 +23,15 @@ public class Player : MonoBehaviour
     {
         if (oxygen_alter == null)
             oxygen_alter = new UnityEvent();
+        if (hungry_alter == null)
+            hungry_alter = new UnityEvent();
     }
     void Update()
     {
 
         float declineSpeed = 0.05f;
-        if(transform.position.y < GroundHeight)
+        
+        if (transform.position.y < GroundHeight && status.oxygen >= status.min_oxygen)
         {
             status.oxygen -= Mathf.Abs(transform.position.y) * declineSpeed;
         }
@@ -34,9 +41,22 @@ public class Player : MonoBehaviour
                 status.oxygen += Mathf.Abs(transform.position.y) * declineSpeed;
         }
 
-        oxygen_alter.Invoke();
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Digging = true;
+        }
+            oxygen_alter.Invoke();
+        //if (Digging)
+        //    Dig();
+    }
 
-        Debug.Log(status.oxygen);
+    void FixedUpdate()
+    {
+        if (Digging)
+        {
+            Dig();
+            Digging = false;
+        }
     }
     public void SetDirection(float direction)
     {
@@ -46,5 +66,25 @@ public class Player : MonoBehaviour
             transform.localScale = Direction;
             direction_alter.Invoke();
         }
+    }
+    public void Dig()
+    {
+        bool CheckDig = false; 
+        for (int i = 0; i < HitPointDown.Length; i++)
+        {
+            Collider2D overCollider2d = Physics2D.OverlapCircle(HitPointDown[i].position, 0.1f, WhatisGround);
+            if (overCollider2d != null)
+            {
+                overCollider2d.transform.GetComponent<Brick>().MakeDot(HitPointDown[i].position);
+                CheckDig = true;
+            }
+        }
+        if (CheckDig)
+        {
+            float hungrydeclineSpeed = 5;
+            status.hungry -= hungrydeclineSpeed;
+        }
+        hungry_alter.Invoke();
+        Debug.Log(status.hungry);
     }
 }
